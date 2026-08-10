@@ -1,31 +1,34 @@
 #!/bin/bash
 set -e
 
-echo "🚀 Installing Smart Skills MCP Server for AI Coding Agents..."
+echo "🚀 Installing Smart Skills MCP Server..."
 
 HOME_DIR="${HOME:-/Users/sergei}"
+INSTALL_DIR="$HOME_DIR/.gemini/config/smart-skills"
 BIN_DIR="$HOME_DIR/.local/bin"
 ANTIGRAVITY_MCP_DIR="$HOME_DIR/.gemini/antigravity-ide/mcp/smart-skills"
 CONFIG_FILE="$HOME_DIR/.gemini/config/mcp_config.json"
 AGENTS_FILE="$HOME_DIR/.gemini/config/AGENTS.md"
 
+# 1. Create target directories & sync files
+mkdir -p "$INSTALL_DIR"
 mkdir -p "$BIN_DIR"
 mkdir -p "$ANTIGRAVITY_MCP_DIR"
 mkdir -p "$HOME_DIR/.gemini/config/skills_bank/claude_skills"
 
-# 1. Install binary executable
-cp -f bin/smart-skills-mcp "$BIN_DIR/smart-skills-mcp"
-cp -f bin/smart-skills-mcp "$BIN_DIR/claude-skills-mcp"
-chmod +x "$BIN_DIR/smart-skills-mcp"
-chmod +x "$BIN_DIR/claude-skills-mcp"
+cp -Rf bin src schemas package.json "$INSTALL_DIR/"
 
-# 2. Copy MCP JSON tool schemas to Antigravity IDE
+# 2. Symlink executables into ~/.local/bin
+ln -sfn "$INSTALL_DIR/bin/smart-skills-mcp" "$BIN_DIR/smart-skills-mcp"
+ln -sfn "$INSTALL_DIR/bin/smart-skills-mcp" "$BIN_DIR/claude-skills-mcp"
+chmod +x "$INSTALL_DIR/bin/smart-skills-mcp"
+
+# 3. Copy MCP JSON schemas
 cp -f schemas/*.json "$ANTIGRAVITY_MCP_DIR/"
-# Also maintain legacy directory compatibility
 mkdir -p "$HOME_DIR/.gemini/antigravity-ide/mcp/claude-skills"
 cp -f schemas/*.json "$HOME_DIR/.gemini/antigravity-ide/mcp/claude-skills/"
 
-# 3. Update mcp_config.json
+# 4. Update mcp_config.json
 if [ -f "$CONFIG_FILE" ]; then
   node -e '
   const fs = require("fs");
@@ -39,7 +42,7 @@ if [ -f "$CONFIG_FILE" ]; then
   ' "$CONFIG_FILE"
 fi
 
-# 4. Update AGENTS.md global rules
+# 5. Update AGENTS.md global rules
 cat << 'EOF' > "$AGENTS_FILE"
 # Global Agent Instructions & Customizations
 
@@ -60,5 +63,5 @@ Execute a tool call to `smart-skills` (or `claude-skills`) MCP server:
 EOF
 
 echo "✅ Smart Skills MCP Server installed successfully!"
-echo "📍 Binary: $BIN_DIR/smart-skills-mcp"
-echo "🌐 MCP Server: smart-skills"
+echo "📍 Installed at: $INSTALL_DIR"
+echo "📍 Executable: $BIN_DIR/smart-skills-mcp"
