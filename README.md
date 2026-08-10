@@ -23,13 +23,14 @@ It features **Universal Multi-Harness Discovery** across all major AI coding fra
 
 ---
 
-## 🚀 Features
+## 🚀 Key Features
 
 - **Zero-Token Bloat**: Keeps 100+ or 1000+ skills in a local library. Only loads the exact instructions required for the current prompt.
 - **Universal Multi-Harness Scanner**: Automatically scans and detects skills across `.claude/skills`, `.codex/skills`, `.cursor/rules`, `.agents/skills`, and `~/.gemini/config/skills_bank/`.
+- **Real-Time Hot Reloading**: Automatically re-indexes skill files as soon as `.md` files are added or modified via `fs.watch`.
+- **Template & Argument Rendering**: Supports parameter substitution for `$1`, `$ARGUMENTS`, `{{target}}` via `render_skill` MCP tool.
+- **CLI Management Suite**: Command-line tool `smart-skills-mcp` with `add`, `update`, `list`, and `lint` commands.
 - **Fast Stdio JSON-RPC**: Runs natively via Node.js Stdio process transport. Zero network ports opened.
-- **Automatic Metadata & Frontmatter Parsing**: Parses YAML frontmatter, Markdown headings, `.mdc` rules, and standalone markdown files.
-- **One-Click Installation**: Includes `install.sh` for instant setup in Antigravity IDE, Claude Code, Codex, and Cursor.
 
 ---
 
@@ -58,14 +59,14 @@ User Prompt --> AI Agent (Antigravity/Codex)
 ## 📦 Installation
 
 ```bash
-git clone https://github.com/your-username/smart-skills.git
+git clone https://github.com/basmakoffcerk-svg/smart-skills.git
 cd smart-skills
 bash install.sh
 ```
 
 ---
 
-## 🧪 Testing
+## 🧪 Testing & CLI Usage
 
 Run the automated test suite:
 
@@ -73,10 +74,10 @@ Run the automated test suite:
 npm test
 ```
 
-Or test the MCP Stdio scanner directly:
+Or run the skill linter:
 
 ```bash
-npm start -- --test
+node bin/smart-skills-mcp lint
 ```
 
 ---
@@ -87,6 +88,7 @@ npm start -- --test
 | :--- | :--- | :--- |
 | `search_skills` | Search skills by query across all harnesses | `query` (string, required), `harness` (string, optional) |
 | `get_skill` | Retrieve full instructions for a skill | `name` (string, required) |
+| `render_skill` | Retrieve skill instructions with argument substitution | `name` (string, required), `arguments` (object, optional) |
 | `list_skills` | List all indexed skills | `harness` (string, optional) |
 | `sync_skills` | Force re-index of skill directories | None |
 
@@ -94,4 +96,4 @@ npm start -- --test
 
 ## 📄 License
 
-[MIT License](LICENSE) © 2026 Sergei & Smart Skills Authors
+[MIT License](LICENSE) © 2026 basmakoffcerk-svg & Smart Skills Authors

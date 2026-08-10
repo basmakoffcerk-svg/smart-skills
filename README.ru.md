@@ -25,8 +25,10 @@
 
 - **Нулевой расход токенов вхолостую**: Храните 100+ или 1000+ скиллов в локальном хранилище. Модель подгружает строго ту инструкцию, которая нужна для текущего промпта.
 - **Мульти-харнесс сканер**: Автоматически просматривает директории `.claude/skills`, `.codex/skills`, `.cursor/rules`, `.agents/skills`, `~/.gemini/config/skills_bank/` и локальные репозитории.
+- **Hot-Reloading в реальном времени**: Фоновый вотчер `fs.watch` мгновенно подхватывает новые `.md` файлы при их добавлении в папки.
+- **Подстановка аргументов (`render_skill`)**: Автоматически подставляет параметры `$1`, `$ARGUMENTS`, `{{target}}` в шаблоны скиллов.
+- **Утилита управления CLI**: Команды `add`, `update`, `list` и `lint` для управления репозиториями и проверки синтаксиса.
 - **Безопасный Stdio транспорт**: Запускается локально через Node.js процессы. Не открывает сетевых портов и не отправляет данные в сеть.
-- **Универсальный парсер**: Считывает YAML frontmatter, Markdown заголовки (`# Skill Name`), файлы правил `.mdc` и стандартные `.md`.
 - **Установка в 1 клик**: Включает готовый скрипт `install.sh` для быстрой интеграции в Antigravity IDE, Claude Code, Codex и Cursor.
 
 ---
@@ -34,14 +36,14 @@
 ## 📦 Быстрая установка
 
 ```bash
-git clone https://github.com/your-username/smart-skills.git
+git clone https://github.com/basmakoffcerk-svg/smart-skills.git
 cd smart-skills
 bash install.sh
 ```
 
 ---
 
-## 🧪 Тестирование
+## 🧪 Тестирование & CLI
 
 Запуск встроенного тест-сюита:
 
@@ -49,10 +51,10 @@ bash install.sh
 npm test
 ```
 
-Тестирование CLI индексатора:
+Линтинг фронтматтера скиллов:
 
 ```bash
-npm start -- --test
+node bin/smart-skills-mcp lint
 ```
 
 ---
@@ -63,6 +65,7 @@ npm start -- --test
 | :--- | :--- | :--- |
 | `search_skills` | Поиск скиллов по ключевым словам | `query` (строка, обязательно), `harness` (строка, опционально) |
 | `get_skill` | Загрузка полной инструкции скилла | `name` (строка, обязательно) |
+| `render_skill` | Подстановка аргументов в шаблон скилла | `name` (строка, обязательно), `arguments` (объект, опционально) |
 | `list_skills` | Получение списка всех скиллов | `harness` (строка, опционально) |
 | `sync_skills` | Переиндексация директорий | Без параметров |
 
@@ -70,4 +73,4 @@ npm start -- --test
 
 ## 📄 Лицензия
 
-[MIT License](LICENSE) © 2026 Sergei & Smart Skills Authors
+[MIT License](LICENSE) © 2026 basmakoffcerk-svg & Smart Skills Authors

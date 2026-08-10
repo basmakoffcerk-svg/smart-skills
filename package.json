@@ -1,6 +1,6 @@
 {
   "name": "smart-skills-mcp",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Universal Multi-Harness Skills MCP Server for AI Coding Agents (Antigravity, Claude Code, Codex, Cursor, Windsurf)",
   "main": "src/index.js",
   "bin": {
@@ -11,6 +11,14 @@
     "test": "node tests/test-mcp.js",
     "install-mcp": "bash install.sh"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/basmakoffcerk-svg/smart-skills.git"
+  },
+  "bugs": {
+    "url": "https://github.com/basmakoffcerk-svg/smart-skills/issues"
+  },
+  "homepage": "https://github.com/basmakoffcerk-svg/smart-skills#readme",
   "keywords": [
     "mcp",
     "model-context-protocol",
@@ -22,7 +30,7 @@
     "ai-agent",
     "skills-orchestrator"
   ],
-  "author": "Sergei & Antigravity Community",
+  "author": "basmakoffcerk-svg & Antigravity Community",
   "license": "MIT",
   "engines": {
     "node": ">=18.0.0"
