@@ -1,12 +1,20 @@
 {
   "name": "list_skills",
-  "description": "List all available skills across all AI harnesses (Claude Code, Codex, Cursor, Antigravity, Windsurf)",
+  "description": "List available skills across AI harnesses with compact pagination",
   "parameters": {
     "type": "object",
     "properties": {
       "harness": {
         "type": "string",
         "description": "Optional filter by harness (claude-code, codex, cursor, antigravity, windsurf, generic)"
+      },
+      "limit": {
+        "type": "number",
+        "description": "Number of items to return (default 20, max 50)"
+      },
+      "offset": {
+        "type": "number",
+        "description": "Offset index for pagination"
       }
     }
   }

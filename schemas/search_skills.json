@@ -1,6 +1,6 @@
 {
   "name": "search_skills",
-  "description": "Search skills by keyword across all AI harnesses",
+  "description": "Search skills by keyword across all AI harnesses (returns top 5-10 relevant matches)",
   "parameters": {
     "type": "object",
     "properties": {
@@ -11,6 +11,10 @@
       "harness": {
         "type": "string",
         "description": "Optional filter by harness (claude-code, codex, cursor, antigravity, windsurf, generic)"
+      },
+      "limit": {
+        "type": "number",
+        "description": "Max matches to return (default 5, max 15)"
       }
     },
     "required": ["query"]

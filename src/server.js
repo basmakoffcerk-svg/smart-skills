@@ -10,8 +10,8 @@ function startServer() {
 
   if (process.argv.includes('--test')) {
     console.log('=== Smart Skills MCP Server ===');
-    console.log(`Total indexed skills across all harnesses: ${store.list().length}`);
-    console.log('Sample indexed skills:', store.list().slice(0, 15));
+    console.log(`Total indexed skills across all harnesses: ${store.list(null, 1000).length}`);
+    console.log('Sample indexed skills (limited to 5):', store.list(null, 5));
     process.exit(0);
   }
 
@@ -41,7 +41,7 @@ function startServer() {
         sendResponse(id, {
           protocolVersion: '2024-11-05',
           capabilities: { tools: {} },
-          serverInfo: { name: 'smart-skills-mcp', version: '1.1.0' }
+          serverInfo: { name: 'smart-skills-mcp', version: '1.2.0' }
         });
         return;
       }
@@ -51,22 +51,25 @@ function startServer() {
           tools: [
             {
               name: 'list_skills',
-              description: 'List all available skills across all AI harnesses (Claude, Codex, Cursor, Antigravity, Windsurf)',
+              description: 'List available skills across AI harnesses with compact pagination',
               inputSchema: {
                 type: 'object',
                 properties: {
-                  harness: { type: 'string', description: 'Filter by harness (claude-code, codex, cursor, antigravity, windsurf, generic)' }
+                  harness: { type: 'string', description: 'Filter by harness (claude-code, codex, cursor, antigravity, windsurf, generic)' },
+                  limit: { type: 'number', description: 'Number of items to return (default 20, max 50)' },
+                  offset: { type: 'number', description: 'Offset index for pagination' }
                 }
               }
             },
             {
               name: 'search_skills',
-              description: 'Search skills by keyword across all AI harnesses',
+              description: 'Search skills by keyword across all AI harnesses (returns top 5-10 relevant matches)',
               inputSchema: {
                 type: 'object',
                 properties: {
                   query: { type: 'string', description: 'Search term or keyword' },
-                  harness: { type: 'string', description: 'Optional harness filter' }
+                  harness: { type: 'string', description: 'Optional harness filter' },
+                  limit: { type: 'number', description: 'Max matches to return (default 5, max 15)' }
                 },
                 required: ['query']
               }
@@ -109,8 +112,10 @@ function startServer() {
 
         if (name === 'list_skills') {
           const harness = args ? args.harness : null;
+          const limit = args && args.limit ? args.limit : 20;
+          const offset = args && args.offset ? args.offset : 0;
           sendResponse(id, {
-            content: [{ type: 'text', text: JSON.stringify(store.list(harness), null, 2) }]
+            content: [{ type: 'text', text: JSON.stringify(store.list(harness, limit, offset), null, 2) }]
           });
           return;
         }
@@ -118,8 +123,9 @@ function startServer() {
         if (name === 'search_skills') {
           const query = args ? args.query : '';
           const harness = args ? args.harness : null;
+          const limit = args && args.limit ? args.limit : 5;
           sendResponse(id, {
-            content: [{ type: 'text', text: JSON.stringify(store.search(query, harness), null, 2) }]
+            content: [{ type: 'text', text: JSON.stringify(store.search(query, harness, limit), null, 2) }]
           });
           return;
         }
@@ -166,7 +172,7 @@ function startServer() {
         if (name === 'sync_skills') {
           store.scan();
           sendResponse(id, {
-            content: [{ type: 'text', text: `Successfully re-indexed skills across all harnesses. Total available: ${store.list().length}` }]
+            content: [{ type: 'text', text: `Successfully re-indexed skills across all harnesses. Total available: ${store.list(null, 1000).length}` }]
           });
           return;
         }

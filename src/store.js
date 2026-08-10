@@ -1,5 +1,5 @@
 /**
- * Smart Skills Store Module with Search & Watcher Integration
+ * Smart Skills Store Module with Search, Limits & Compact Output Optimization
  */
 
 const fs = require('fs');
@@ -60,12 +60,13 @@ class SkillsStore {
       const raw = fs.readFileSync(filePath, 'utf8');
       const { metadata, body } = parseFrontmatter(raw);
       const name = metadata.name || defaultName;
-      const description = metadata.description || body.slice(0, 180).replace(/\n/g, ' ') + '...';
+      
+      let rawDesc = metadata.description || body.slice(0, 180).replace(/\n/g, ' ').trim() + '...';
       const harness = detectHarness(filePath);
 
       this.skills.set(name, {
         name,
-        description,
+        description: rawDesc,
         harness,
         metadata,
         body,
@@ -74,18 +75,35 @@ class SkillsStore {
     } catch (err) {}
   }
 
-  list(harnessFilter = null) {
-    const list = Array.from(this.skills.values());
-    if (!harnessFilter) {
-      return list.map(s => ({ name: s.name, description: s.description, harness: s.harness, filePath: s.filePath }));
+  formatSkillSummary(skill, extra = {}) {
+    let cleanDesc = (skill.description || '').replace(/\s+/g, ' ').trim();
+    if (cleanDesc.length > 150) {
+      cleanDesc = cleanDesc.slice(0, 150) + '...';
     }
-    return list
-      .filter(s => s.harness === harnessFilter || harnessFilter === 'all')
-      .map(s => ({ name: s.name, description: s.description, harness: s.harness, filePath: s.filePath }));
+    return {
+      name: skill.name,
+      description: cleanDesc,
+      harness: skill.harness,
+      ...extra
+    };
   }
 
-  search(query, harnessFilter = null) {
-    if (!query) return this.list(harnessFilter);
+  list(harnessFilter = null, limit = 20, offset = 0) {
+    const maxLimit = Math.min(Math.max(1, limit || 20), 50);
+    const list = Array.from(this.skills.values());
+    
+    let filtered = list;
+    if (harnessFilter && harnessFilter !== 'all') {
+      filtered = list.filter(s => s.harness === harnessFilter);
+    }
+    
+    const paginated = filtered.slice(offset, offset + maxLimit);
+    return paginated.map(s => this.formatSkillSummary(s));
+  }
+
+  search(query, harnessFilter = null, limit = 10) {
+    if (!query) return this.list(harnessFilter, limit);
+    const maxLimit = Math.min(Math.max(1, limit || 10), 20);
     const results = [];
 
     for (const s of this.skills.values()) {
@@ -98,13 +116,9 @@ class SkillsStore {
     }
 
     results.sort((a, b) => b.score - a.score);
-    return results.map(r => ({
-      name: r.skill.name,
-      description: r.skill.description,
-      harness: r.skill.harness,
-      filePath: r.skill.filePath,
-      relevanceScore: r.score
-    }));
+    const topResults = results.slice(0, maxLimit);
+
+    return topResults.map(r => this.formatSkillSummary(r.skill, { relevanceScore: r.score }));
   }
 
   get(name) {
