@@ -1,5 +1,13 @@
 #!/usr/bin/env node
 
+const { handleCliCommands } = require('../src/cli');
 const { startServer } = require('../src/server');
 
-startServer();
+const args = process.argv.slice(2);
+const knownCommands = ['add', 'update', 'list', 'lint'];
+
+if (args.length > 0 && knownCommands.includes(args[0])) {
+  handleCliCommands(args);
+} else {
+  startServer();
+}

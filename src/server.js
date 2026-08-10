@@ -6,7 +6,7 @@ const readline = require('readline');
 const { SkillsStore } = require('./store');
 
 function startServer() {
-  const store = new SkillsStore();
+  const store = new SkillsStore(true);
 
   if (process.argv.includes('--test')) {
     console.log('=== Smart Skills MCP Server ===');
@@ -41,7 +41,7 @@ function startServer() {
         sendResponse(id, {
           protocolVersion: '2024-11-05',
           capabilities: { tools: {} },
-          serverInfo: { name: 'smart-skills-mcp', version: '1.0.0' }
+          serverInfo: { name: 'smart-skills-mcp', version: '1.1.0' }
         });
         return;
       }
@@ -78,6 +78,18 @@ function startServer() {
                 type: 'object',
                 properties: {
                   name: { type: 'string', description: 'Exact name of the skill' }
+                },
+                required: ['name']
+              }
+            },
+            {
+              name: 'render_skill',
+              description: 'Retrieve full skill prompt instructions with argument placeholders ($1, $ARGUMENTS, {{target}}) substituted with values',
+              inputSchema: {
+                type: 'object',
+                properties: {
+                  name: { type: 'string', description: 'Exact name of the skill' },
+                  arguments: { type: 'object', description: 'Key-value map or positional string of arguments to substitute into the skill template' }
                 },
                 required: ['name']
               }
@@ -125,6 +137,26 @@ function startServer() {
               content: [{
                 type: 'text',
                 text: `### Skill: ${skill.name}\n**Harness**: ${skill.harness}\n**File**: ${skill.filePath}\n\n---\n\n${skill.body}`
+              }]
+            });
+          }
+          return;
+        }
+
+        if (name === 'render_skill') {
+          const skillName = args ? args.name : '';
+          const skillArgs = args ? (args.arguments || {}) : {};
+          const rendered = store.render(skillName, skillArgs);
+          if (!rendered) {
+            sendResponse(id, {
+              content: [{ type: 'text', text: `Skill "${skillName}" not found.` }],
+              isError: true
+            });
+          } else {
+            sendResponse(id, {
+              content: [{
+                type: 'text',
+                text: `### Rendered Skill: ${skillName}\n\n---\n\n${rendered}`
               }]
             });
           }

@@ -1,5 +1,5 @@
 /**
- * Frontmatter and Markdown Parser for Smart Skills MCP
+ * Frontmatter, Markdown & Template Rendering Parser for Smart Skills MCP
  */
 
 function parseFrontmatter(content) {
@@ -33,4 +33,35 @@ function parseFrontmatter(content) {
   return result;
 }
 
-module.exports = { parseFrontmatter };
+function renderSkill(body, args = {}) {
+  if (!body) return '';
+  let rendered = body;
+
+  const fullArgs = typeof args === 'string' ? args : (args.$ARGUMENTS || args.arguments || args.args || '');
+  const positionalList = typeof fullArgs === 'string' ? fullArgs.split(/\s+/).filter(Boolean) : [];
+
+  // Replace $ARGUMENTS and $@
+  rendered = rendered.replace(/\$ARGUMENTS|\$@/g, fullArgs);
+
+  // Replace $1, $2, $3...
+  positionalList.forEach((argVal, idx) => {
+    const placeholder = new RegExp(`\\$${idx + 1}\\b`, 'g');
+    rendered = rendered.replace(placeholder, argVal);
+  });
+
+  // Replace {{variable}} or $VARIABLE
+  if (typeof args === 'object' && args !== null) {
+    for (const [key, value] of Object.entries(args)) {
+      if (typeof value === 'string' || typeof value === 'number') {
+        const mustacheRegex = new RegExp(`\\{\\{\\s*${key}\\s*\\}\\}`, 'gi');
+        const dollarRegex = new RegExp(`\\$${key}\\b`, 'gi');
+        rendered = rendered.replace(mustacheRegex, String(value));
+        rendered = rendered.replace(dollarRegex, String(value));
+      }
+    }
+  }
+
+  return rendered;
+}
+
+module.exports = { parseFrontmatter, renderSkill };

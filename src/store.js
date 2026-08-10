@@ -1,16 +1,23 @@
 /**
- * Smart Skills Store Module
+ * Smart Skills Store Module with Search & Watcher Integration
  */
 
 const fs = require('fs');
 const path = require('path');
-const { parseFrontmatter } = require('./parser');
+const { parseFrontmatter, renderSkill } = require('./parser');
 const { getSearchDirectories, detectHarness } = require('./harness');
+const { calculateScore } = require('./search');
+const { SkillsWatcher } = require('./watcher');
 
 class SkillsStore {
-  constructor() {
+  constructor(enableWatcher = false) {
     this.skills = new Map();
     this.scan();
+
+    if (enableWatcher) {
+      this.watcher = new SkillsWatcher(() => this.scan());
+      this.watcher.start();
+    }
   }
 
   scan() {
@@ -79,17 +86,12 @@ class SkillsStore {
 
   search(query, harnessFilter = null) {
     if (!query) return this.list(harnessFilter);
-    const q = query.toLowerCase();
     const results = [];
 
     for (const s of this.skills.values()) {
       if (harnessFilter && harnessFilter !== 'all' && s.harness !== harnessFilter) continue;
 
-      let score = 0;
-      if (s.name.toLowerCase().includes(q)) score += 10;
-      if (s.description.toLowerCase().includes(q)) score += 5;
-      if (s.body.toLowerCase().includes(q)) score += 1;
-
+      const score = calculateScore(s, query);
       if (score > 0) {
         results.push({ skill: s, score });
       }
@@ -114,6 +116,12 @@ class SkillsStore {
       return null;
     }
     return s;
+  }
+
+  render(name, args = {}) {
+    const skill = this.get(name);
+    if (!skill) return null;
+    return renderSkill(skill.body, args);
   }
 }
 
