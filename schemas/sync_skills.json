@@ -1,0 +1,8 @@
+{
+  "name": "sync_skills",
+  "description": "Re-scan all harness directories and update skill index",
+  "parameters": {
+    "type": "object",
+    "properties": {}
+  }
+}

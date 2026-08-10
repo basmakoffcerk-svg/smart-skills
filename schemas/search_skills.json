@@ -1,0 +1,18 @@
+{
+  "name": "search_skills",
+  "description": "Search skills by keyword across all AI harnesses",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "query": {
+        "type": "string",
+        "description": "Search term or keyword"
+      },
+      "harness": {
+        "type": "string",
+        "description": "Optional filter by harness (claude-code, codex, cursor, antigravity, windsurf, generic)"
+      }
+    },
+    "required": ["query"]
+  }
+}

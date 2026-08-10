@@ -1,0 +1,30 @@
+{
+  "name": "smart-skills-mcp",
+  "version": "1.0.0",
+  "description": "Universal Multi-Harness Skills MCP Server for AI Coding Agents (Antigravity, Claude Code, Codex, Cursor, Windsurf)",
+  "main": "src/index.js",
+  "bin": {
+    "smart-skills-mcp": "bin/smart-skills-mcp"
+  },
+  "scripts": {
+    "start": "node bin/smart-skills-mcp",
+    "test": "node tests/test-mcp.js",
+    "install-mcp": "bash install.sh"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "skills",
+    "antigravity-ide",
+    "claude-code",
+    "codex",
+    "cursor",
+    "ai-agent",
+    "skills-orchestrator"
+  ],
+  "author": "Sergei & Antigravity Community",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

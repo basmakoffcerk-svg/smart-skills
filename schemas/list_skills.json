@@ -1,0 +1,13 @@
+{
+  "name": "list_skills",
+  "description": "List all available skills across all AI harnesses (Claude Code, Codex, Cursor, Antigravity, Windsurf)",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "harness": {
+        "type": "string",
+        "description": "Optional filter by harness (claude-code, codex, cursor, antigravity, windsurf, generic)"
+      }
+    }
+  }
+}
