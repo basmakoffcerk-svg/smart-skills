@@ -1,5 +1,5 @@
 /**
- * Stdio JSON-RPC MCP Server Module
+ * Stdio JSON-RPC MCP Server Module with Imperative Agent Directives
  */
 
 const readline = require('readline');
@@ -41,7 +41,7 @@ function startServer() {
         sendResponse(id, {
           protocolVersion: '2024-11-05',
           capabilities: { tools: {} },
-          serverInfo: { name: 'smart-skills-mcp', version: '1.2.0' }
+          serverInfo: { name: 'smart-skills-mcp', version: '1.3.0' }
         });
         return;
       }
@@ -63,7 +63,7 @@ function startServer() {
             },
             {
               name: 'search_skills',
-              description: 'Search skills by keyword across all AI harnesses (returns top 5-10 relevant matches)',
+              description: 'Search skills by keyword across all AI harnesses (returns top matches and instructs agent to load top skill)',
               inputSchema: {
                 type: 'object',
                 properties: {
@@ -124,9 +124,25 @@ function startServer() {
           const query = args ? args.query : '';
           const harness = args ? args.harness : null;
           const limit = args && args.limit ? args.limit : 5;
-          sendResponse(id, {
-            content: [{ type: 'text', text: JSON.stringify(store.search(query, harness, limit), null, 2) }]
-          });
+          const results = store.search(query, harness, limit);
+
+          if (results.length === 0) {
+            sendResponse(id, {
+              content: [{
+                type: 'text',
+                text: `No matching skills found in repository for query "${query}". Proceed with standard agent capabilities.`
+              }]
+            });
+          } else {
+            const topSkill = results[0];
+            const textOutput = `Found ${results.length} matching skill(s) in repository:\n` +
+              JSON.stringify(results, null, 2) +
+              `\n\nCRITICAL MANDATORY INSTRUCTION FOR AGENT: You MUST now call get_skill(name: "${topSkill.name}") or render_skill(name: "${topSkill.name}") to load the full skill instructions before fulfilling the request. Do NOT generate the answer without calling get_skill first!`;
+
+            sendResponse(id, {
+              content: [{ type: 'text', text: textOutput }]
+            });
+          }
           return;
         }
 
@@ -142,7 +158,7 @@ function startServer() {
             sendResponse(id, {
               content: [{
                 type: 'text',
-                text: `### Skill: ${skill.name}\n**Harness**: ${skill.harness}\n**File**: ${skill.filePath}\n\n---\n\n${skill.body}`
+                text: `### ACTIVE SKILL INSTRUCTIONS: ${skill.name}\n**Harness**: ${skill.harness}\n**File**: ${skill.filePath}\n\n---\n\n${skill.body}\n\n---\nCRITICAL DIRECTIVE: Adhere strictly to the guidelines and workflows in this skill.`
               }]
             });
           }
@@ -162,7 +178,7 @@ function startServer() {
             sendResponse(id, {
               content: [{
                 type: 'text',
-                text: `### Rendered Skill: ${skillName}\n\n---\n\n${rendered}`
+                text: `### RENDERED SKILL INSTRUCTIONS: ${skillName}\n\n---\n\n${rendered}\n\n---\nCRITICAL DIRECTIVE: Adhere strictly to the guidelines and workflows in this rendered skill.`
               }]
             });
           }
