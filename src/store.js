@@ -1,5 +1,5 @@
 /**
- * Smart Skills Store Module with Search, Limits & Compact Output Optimization
+ * Smart Skills Store Module with Search, Limits & Demotion Optimization
  */
 
 const fs = require('fs');
@@ -111,7 +111,12 @@ class SkillsStore {
 
       const score = calculateScore(s, query);
       if (score > 0) {
-        results.push({ skill: s, score });
+        let adjustedScore = score;
+        // Demote meta orchestrator skill if query is looking for a specific domain skill
+        if (s.name.toLowerCase() === 'skill-orchestrator' && !query.toLowerCase().includes('orchestrator')) {
+          adjustedScore = 1;
+        }
+        results.push({ skill: s, score: adjustedScore });
       }
     }
 
