@@ -52,31 +52,44 @@ function addRepository(gitUrl) {
 
   if (fs.existsSync(targetDir)) {
     console.log(`⚠️ Repository ${repoName} already exists in ${targetDir}. Pulling latest...`);
-    execSync(`git -C "${targetDir}" pull`, { stdio: 'inherit' });
+    try {
+      execSync(`git -C "${targetDir}" pull`, { stdio: 'inherit' });
+    } catch (e) {}
   } else {
     execSync(`git clone "${gitUrl}" "${targetDir}"`, { stdio: 'inherit' });
   }
 
-  // Symlink skills
   let linkedCount = 0;
-  const skillsSubdir = fs.existsSync(path.join(targetDir, 'skills')) ? path.join(targetDir, 'skills') : targetDir;
-  
-  const entries = fs.readdirSync(skillsSubdir);
-  for (const name of entries) {
-    if (name.startsWith('.')) continue;
-    const fullPath = path.join(skillsSubdir, name);
-    if (fs.statSync(fullPath).isDirectory()) {
-      const linkPath = path.join(SKILLS_BANK_DIR, name);
-      try {
-        fs.symlinkSync(fullPath, linkPath, 'dir');
-        linkedCount++;
-      } catch (e) {
-        // Link exists
+
+  // Check if root directory itself is a single SKILL.md repository
+  if (fs.existsSync(path.join(targetDir, 'SKILL.md'))) {
+    const linkPath = path.join(SKILLS_BANK_DIR, repoName);
+    try {
+      fs.symlinkSync(targetDir, linkPath, 'dir');
+      linkedCount++;
+    } catch (e) {
+      // Link exists
+    }
+  } else {
+    // Multi-skill repository
+    const skillsSubdir = fs.existsSync(path.join(targetDir, 'skills')) ? path.join(targetDir, 'skills') : targetDir;
+    const entries = fs.readdirSync(skillsSubdir);
+    for (const name of entries) {
+      if (name.startsWith('.')) continue;
+      const fullPath = path.join(skillsSubdir, name);
+      if (fs.statSync(fullPath).isDirectory()) {
+        const linkPath = path.join(SKILLS_BANK_DIR, name);
+        try {
+          fs.symlinkSync(fullPath, linkPath, 'dir');
+          linkedCount++;
+        } catch (e) {
+          // Link exists
+        }
       }
     }
   }
 
-  console.log(`✅ Successfully added ${repoName} and linked ${linkedCount} skills!`);
+  console.log(`✅ Successfully added ${repoName} and linked ${linkedCount} skill(s)!`);
 }
 
 function updateRepositories() {
@@ -105,7 +118,7 @@ function updateRepositories() {
 
 function listInstalledSkills() {
   const store = new SkillsStore();
-  const skills = store.list();
+  const skills = store.list(null, 1000);
   console.log(`\n📚 Total Installed Skills: ${skills.length}\n`);
 
   const byHarness = {};
@@ -117,7 +130,7 @@ function listInstalledSkills() {
   for (const [harness, list] of Object.entries(byHarness)) {
     console.log(`\n--- Harness: ${harness.toUpperCase()} (${list.length} skills) ---`);
     list.forEach(s => {
-      console.log(` • ${s.name.padEnd(25)} - ${s.description.slice(0, 70)}...`);
+      console.log(` • ${s.name.padEnd(30)} - ${s.description.slice(0, 70)}...`);
     });
   }
 }
@@ -125,7 +138,7 @@ function listInstalledSkills() {
 function lintSkills() {
   console.log('🔍 Linting installed skill files...\n');
   const store = new SkillsStore();
-  const skills = store.list();
+  const skills = store.list(null, 1000);
   let errors = 0;
   let warnings = 0;
 
